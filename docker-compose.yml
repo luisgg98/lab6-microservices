@@ -1,0 +1,48 @@
+version: "2.2"
+services:
+
+  registration:
+    build:
+      context: ./registration
+      dockerfile: Dockerfile
+    ports:
+      - 1111:1111
+    networks:
+      - practica6
+
+  accounts:
+    build:
+      context: ./accounts
+      dockerfile: Dockerfile
+    ports:
+      - 2222
+    networks:
+      - practica6
+    links:
+      - registration
+    depends_on:
+    - registration
+    environment:
+      # Important for clients to register with eureka
+      - eureka.client.serviceUrl.defaultZone=http://registration:1111/eureka/
+    scale: 2
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    ports:
+      - 3333:3333
+    networks:
+      - practica6
+    links:
+      - registration
+    depends_on:
+      - registration
+      - accounts
+    environment:
+      # Important for clients to register with eureka
+      - eureka.client.serviceUrl.defaultZone=http://registration:1111/eureka/
+
+networks:
+  practica6:
